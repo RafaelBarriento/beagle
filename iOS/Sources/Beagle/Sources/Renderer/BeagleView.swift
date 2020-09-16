@@ -22,7 +22,9 @@ public class BeagleView: UIView {
     
     // MARK: - Private Attributes
     
-    private var beagleController: BeagleController
+    private var beagleController: BeagleScreenViewController
+    
+    private var alreadyCalculateIntrinsicSize = true
     
     // MARK: - Initialization
     
@@ -60,13 +62,42 @@ public class BeagleView: UIView {
         guard let beagleView = beagleController.view else {
             return
         }
-        
+        clipsToBounds = true
         addSubview(beagleView)
         beagleView.anchorTo(superview: self)
+        invalidateIntrinsicContentSize()
     }
     
     public override var intrinsicContentSize: CGSize {
-        return beagleController.view.frame.size
+//        return CGSize(width: 200, height: 200)
+        if case .view(let screenView) = beagleController.content, let content = screenView.subviews[safe: 0] {
+            var size = CGSize(width: Double.nan, height: .nan)
+            if !alreadyCalculateIntrinsicSize {
+                alreadyCalculateIntrinsicSize = true
+                switch content.yoga.flexDirection {
+                case .column, .columnReverse:
+                    size.height = frame.size.height
+                case .row, .rowReverse:
+                    size.width = frame.size.width
+                default:
+                    break
+                }
+            }
+            return screenView.yoga.calculateLayout(with: size)
+        }
+
+        return super.intrinsicContentSize
+    }
+    
+    public override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        if case .view(let screenView) = beagleController.content {
+            screenView.frame = bounds
+            screenView.yoga.applyLayout(preservingOrigin: true)
+            invalidateIntrinsicContentSize() // we need to calculate intrinsecSize a second time
+            alreadyCalculateIntrinsicSize = false
+        }
     }
 }
 

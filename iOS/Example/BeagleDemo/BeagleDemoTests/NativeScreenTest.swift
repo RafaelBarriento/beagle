@@ -22,7 +22,8 @@ class NativeScreenTest: XCTestCase {
 
     func testNativeScreen() {
         let nativeScreen = NativeViewController()
-        assertSnapshot(matching: nativeScreen, as: .image(size: .init(width: 300, height: 400)))
+        
+        assertSnapshot(matching: nativeScreen, as: .image(size: .init(width: 400, height: 800)))
     }
 
 }
