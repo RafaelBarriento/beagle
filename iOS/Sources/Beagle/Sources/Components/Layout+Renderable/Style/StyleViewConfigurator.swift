@@ -79,15 +79,6 @@ final class StyleViewConfigurator: StyleViewConfiguratorProtocol {
     }
     
     func markDirty() {
-//        view?.yoga.markDirty()
-//        var view = self.view
-//        while let currentView = view {
-//            if !(currentView.superview?.yoga.isEnabled ?? false) {
-//                view?.setNeedsLayout()
-//            }
-//            view = view?.superview
-//        }
-        
         view?.yoga.markDirty()
         var view: UIView? = self.view
         while let currentView = view {

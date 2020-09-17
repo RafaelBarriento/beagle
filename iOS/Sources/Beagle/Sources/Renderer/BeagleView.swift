@@ -69,35 +69,38 @@ public class BeagleView: UIView {
     }
     
     public override var intrinsicContentSize: CGSize {
-//        return CGSize(width: 200, height: 200)
-        if case .view(let screenView) = beagleController.content, let content = screenView.subviews[safe: 0] {
-            var size = CGSize(width: Double.nan, height: .nan)
-            if !alreadyCalculateIntrinsicSize {
-                alreadyCalculateIntrinsicSize = true
-                switch content.yoga.flexDirection {
-                case .column, .columnReverse:
-                    size.height = frame.size.height
-                case .row, .rowReverse:
-                    size.width = frame.size.width
-                default:
-                    break
-                }
-            }
-            return screenView.yoga.calculateLayout(with: size)
+        guard case .view(let content) = beagleController.content,
+              let screenView = content as? ScreenView,
+              let screenContent = screenView.subviews[safe: 0] else {
+            return super.intrinsicContentSize
         }
-
-        return super.intrinsicContentSize
+        
+        var size = CGSize(width: Double.nan, height: .nan)
+        if !alreadyCalculateIntrinsicSize {
+            alreadyCalculateIntrinsicSize = true
+            switch screenContent.yoga.flexDirection {
+            case .column, .columnReverse:
+                size.height = frame.size.height
+            case .row, .rowReverse:
+                size.width = frame.size.width
+            default:
+                break
+            }
+        }
+        return screenView.yoga.calculateLayout(with: size)
     }
     
     public override func layoutSubviews() {
         super.layoutSubviews()
         
-        if case .view(let screenView) = beagleController.content {
-            screenView.frame = bounds
-            screenView.yoga.applyLayout(preservingOrigin: true)
-            invalidateIntrinsicContentSize() // we need to calculate intrinsecSize a second time
-            alreadyCalculateIntrinsicSize = false
+        guard case .view(let content) = beagleController.content,
+              let screenView = content as? ScreenView  else {
+            return
         }
+        screenView.frame = bounds
+        screenView.yoga.applyLayout(preservingOrigin: true)
+        invalidateIntrinsicContentSize() // we need to calculate intrinsecSize a second time
+        alreadyCalculateIntrinsicSize = false
     }
 }
 
