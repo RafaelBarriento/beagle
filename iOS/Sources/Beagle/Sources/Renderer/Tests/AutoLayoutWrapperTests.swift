@@ -21,21 +21,75 @@ import BeagleSchema
 
 class AutoLayoutWrapperTests: XCTestCase {
     
-    func testWrapperView() {
+    let size = ImageSize.custom(CGSize(width: 200, height: 200))
+    let defaultStyle = Style().backgroundColor("#00FFFF").margin(EdgeValue(all: 5)).padding(EdgeValue(all: 5))
+    
+    func testWrapperViewWithDefault() { // column and noWrap
         // Given
-        let component = Container( widgetProperties: WidgetProperties(id: "container", style: Style(backgroundColor: "4000FFFF", flex: Flex().flexWrap(.wrap).flexDirection(.column)))) {
-            
-            Text("Yoga", widgetProperties: .init(Flex().shrink(0)))
+        let component = Container(widgetProperties: .init(style: defaultStyle)) {
+            Text("Yoga")
+            AutoLayoutComponent()
             AutoLayoutComponent()
         }
         let viewController = BeagleScreenViewController(component)
         
         // When/ Then
-        assertSnapshotImage(viewController, size: .custom(CGSize(width: 200, height: 200)))
+        assertSnapshotImage(viewController, size: size)
+    }
+    
+    func testWrapperViewWithColumnAndWrap() {
+        // Given
+        let component = Container(widgetProperties: .init(style: defaultStyle.flex(Flex().flexDirection(.column).flexWrap(.wrap)))) {
+            Text("Yoga")
+            AutoLayoutComponent()
+            AutoLayoutComponent()
+        }
+        let viewController = BeagleScreenViewController(component)
         
+        // When/ Then
+        assertSnapshotImage(viewController, size: size)
+    }
+    
+    func testWrapperViewWithRowAndNoWrap() {
+        // Given
+        let component = Container(widgetProperties: .init(style: defaultStyle.flex(Flex().flexDirection(.row).flexWrap(.noWrap)))) {
+            Text("Yoga")
+            AutoLayoutComponent()
+            AutoLayoutComponent()
+            AutoLayoutComponent()
+        }
+        let viewController = BeagleScreenViewController(component)
+        
+        // When/ Then
+        assertSnapshotImage(viewController, size: size)
+    }
+    
+    func testWrapperViewWithRowAndWrap() {
+        // Given
+        let component = Container(widgetProperties: .init(style: defaultStyle.flex(Flex().flexDirection(.row).flexWrap(.wrap)))) {
+            Text("Yoga")
+            AutoLayoutComponent()
+            AutoLayoutComponent()
+            AutoLayoutComponent()
+        }
+        let viewController = BeagleScreenViewController(component)
+        
+        // When/ Then
+        assertSnapshotImage(viewController, size: size)
+    }
+    
+    func testWrapperViewResizing() {
+        // Given
+        let component = Container(widgetProperties: .init(id: "container", style: defaultStyle.flex(Flex().flexDirection(.row)))) {
+            Text("Yoga")
+            AutoLayoutComponent()
+        }
+        let viewController = BeagleScreenViewController(component)
+        
+        // When/ Then
+        assertSnapshotImage(viewController, size: size)
         viewController.execute(actions: [AddChildren(componentId: "container", value: [AutoLayoutComponent()])], origin: UIView())
-        
-        assertSnapshotImage(viewController, size: .custom(CGSize(width: 200, height: 200)))
+        assertSnapshotImage(viewController, size: size)
     }
     
 }
@@ -49,13 +103,9 @@ struct AutoLayoutComponent: Widget {
 }
 
 class AutoLayoutSample: UIView {
-    let constraintView: UIView
-    let heightConstraint: NSLayoutConstraint
     
     override init(frame: CGRect) {
         let view = UIView()
-        self.constraintView = view
-        self.heightConstraint = view.heightAnchor.constraint(equalToConstant: 100)
         super.init(frame: frame)
         
         backgroundColor = .yellow
@@ -69,6 +119,7 @@ class AutoLayoutSample: UIView {
     
         let label = UILabel()
         label.text = "AUTO"
+        label.setContentCompressionResistancePriority(.required, for: .vertical)
         addSubview(label)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5).isActive = true
@@ -80,52 +131,13 @@ class AutoLayoutSample: UIView {
         view.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5).isActive = true
         view.topAnchor.constraint(equalTo: label.bottomAnchor, constant: 5).isActive = true
         view.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        heightConstraint.isActive = true
+        view.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5).isActive = true
+        view.heightAnchor.constraint(equalToConstant: 60).isActive = true
         
-        let button = UIButton(type: .system)
-        button.setTitle("shrink", for: .normal)
-        button.addTarget(self, action: #selector(shrink), for: .touchUpInside)
-        addSubview(button)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5).isActive = true
-        button.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5).isActive = true
-        button.topAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        button.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -5).isActive = true
-        button.heightAnchor.constraint(equalToConstant: 20).isActive = true
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc func shrink() {
-        UIView.animate(withDuration: 0.7) {
-            self.heightConstraint.constant = 50
-            self.superview?.markDirty() // we need to call on Wrapper
-            self.rootLayoutIfNeeded()
-        }
-    }
-}
-
-private extension UIView {
-    func markDirty() {
-        yoga.markDirty()
-        var view: UIView? = self
-        while let currentView = view {
-            if !currentView.yoga.isEnabled {
-                currentView.superview?.invalidateIntrinsicContentSize()
-                currentView.setNeedsLayout()
-                break
-            }
-            view = view?.superview
-        }
-    }
-    
-    func rootLayoutIfNeeded() { // for animations
-        var view: UIView? = self
-        while view?.superview != nil {
-            view = view?.superview
-        }
-        view?.layoutIfNeeded()
-    }
 }

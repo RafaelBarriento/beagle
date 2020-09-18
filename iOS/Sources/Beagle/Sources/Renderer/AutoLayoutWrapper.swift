@@ -28,14 +28,14 @@ public class AutoLayoutWrapper: UIView {
         
         addSubview(view)
         
-        view.trailingAnchor.constraint(equalTo: trailingAnchor).isActive = true
+        let trailing = view.trailingAnchor.constraint(equalTo: trailingAnchor)
+        trailing.priority = .init(999)
+        trailing.isActive = true
         view.topAnchor.constraint(equalTo: topAnchor).isActive = true
         let botton = view.bottomAnchor.constraint(equalTo: bottomAnchor)
         botton.priority = .init(rawValue: 999)
         botton.isActive = true
-        let leading = view.leadingAnchor.constraint(equalTo: leadingAnchor)
-        leading.priority = .init(rawValue: 999)
-        leading.isActive = true
+        view.leadingAnchor.constraint(equalTo: leadingAnchor).isActive = true
     }
     
     required init?(coder: NSCoder) {
