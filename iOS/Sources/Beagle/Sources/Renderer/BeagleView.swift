@@ -51,7 +51,6 @@ public class BeagleView: UIView {
     // MARK: - Lifecycle
     
     public override func didMoveToWindow() {
-        super.didMoveToWindow()
         guard let parentViewController = parentViewController else { return }
         parentViewController.addChild(beagleController)
         setupView()
