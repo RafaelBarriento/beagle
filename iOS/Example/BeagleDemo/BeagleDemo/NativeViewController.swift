@@ -59,6 +59,8 @@ class NativeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = "Beagle Native"
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: nil, style: .plain, target: nil, action: nil)
         setupView()
     }
     
@@ -72,14 +74,19 @@ class NativeViewController: UIViewController {
             topConstant: 50
         )
         
+        let layoutMargins = view.layoutMarginsGuide
+        
         view.addSubview(beagleView)
         beagleView.translatesAutoresizingMaskIntoConstraints = false
         beagleView.topAnchor.constraint(equalTo: firstLabel.bottomAnchor, constant: 50).isActive = true
+        beagleView.leadingAnchor.constraint(greaterThanOrEqualTo: layoutMargins.leadingAnchor).isActive = true
+        beagleView.trailingAnchor.constraint(lessThanOrEqualTo: layoutMargins.trailingAnchor).isActive = true
         beagleView.centerXAnchor.constraint(equalTo: firstLabel.centerXAnchor).isActive = true
-        
+                
         view.addSubview(secondLabel)
         secondLabel.anchorCenterXToSuperview()
         secondLabel.anchor(top: beagleView.bottomAnchor, topConstant: 30)
+        secondLabel.bottomAnchor.constraint(lessThanOrEqualTo: layoutMargins.bottomAnchor).isActive = true
     }
 
     private let grayColor = "#EEEEEE"

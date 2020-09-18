@@ -32,17 +32,18 @@ struct BeagleViewScreen: DeeplinkScreen {
 class CustomViewController: UIViewController {
     
     private lazy var beagleView = BeagleView(
-        ScreenComponent(navigationBar: NavigationBar(title: "BeagleView"), child: Container(widgetProperties: WidgetProperties(id: "container", style: Style().backgroundColor("#D3D3D3").margin(EdgeValue(all: 5)).padding(EdgeValue(all: 5)).flex(Flex().flexWrap(.wrap)))) {
+        Container(widgetProperties: WidgetProperties(id: "container", style: Style().backgroundColor("#D3D3D3").margin(EdgeValue(all: 5)).padding(EdgeValue(all: 5)).flex(Flex().flexWrap(.wrap)))) {
             Text("YOGA")
             Button(text: "ADD", onPress: [
                 AddChildren(componentId: "container", value: [AutoLayoutComponent()])
             ])
             AutoLayoutComponent()
-        })
+        }
     )
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.title = "BeagleView"
         setupView()
     }
     

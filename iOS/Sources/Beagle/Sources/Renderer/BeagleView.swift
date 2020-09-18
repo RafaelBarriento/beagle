@@ -38,6 +38,7 @@ public class BeagleView: UIView {
     
     required init(viewModel: BeagleScreenViewModel) {
         let controller = BeagleScreenViewController(viewModel: viewModel)
+        controller.skipNavigationCreation = true
         self.beagleController = controller
         super.init(frame: .zero)
     }
@@ -71,21 +72,20 @@ public class BeagleView: UIView {
     
     public override var intrinsicContentSize: CGSize {
         guard case .view(let content) = beagleController.content,
-              let screenView = content as? ScreenView,
-              let screenContent = screenView.subviews[safe: 0] else {
+              let screenView = content as? ScreenView else {
             return super.intrinsicContentSize
         }
         
-        var size = CGSize(width: Double.nan, height: .nan)
+        var size = CGSize(width: Double.nan, height: Double.nan)
         if !alreadyCalculateIntrinsicSize {
             alreadyCalculateIntrinsicSize = true
-            switch screenContent.yoga.flexDirection {
-            case .column, .columnReverse:
-                size.height = frame.size.height
-            case .row, .rowReverse:
-                size.width = frame.size.width
-            default:
-                break
+            
+            let unboundedIntrinsic = screenView.yoga.calculateLayout(with: size)
+            if unboundedIntrinsic.width > frame.width {
+                size.width = frame.width
+            }
+            if unboundedIntrinsic.height > frame.height {
+                size.height = frame.height
             }
         }
         return screenView.yoga.calculateLayout(with: size)
@@ -95,14 +95,27 @@ public class BeagleView: UIView {
         super.layoutSubviews()
         
         guard case .view(let content) = beagleController.content,
-              let screenView = content as? ScreenView  else {
-            return
-        }
+              let screenView = content as? ScreenView else { return }
+                
         screenView.frame = bounds
         screenView.yoga.applyLayout(preservingOrigin: true)
+        
         invalidateIntrinsicContentSize() // we need to calculate intrinsecSize a second time
         alreadyCalculateIntrinsicSize = false
     }
+    
+//    private func screenView(from controller: BeagleScreenViewController?) -> ScreenView? {
+//        switch controller?.content {
+//        case .view(let view):
+//            return view as? ScreenView
+//        case .navigation(let navigation):
+//            let controller = navigation.viewControllers.last
+//            _ = controller?.view
+//            return screenView(from: controller as? BeagleScreenViewController)
+//        case .none:
+//            return nil
+//        }
+//    }
 }
 
 private extension UIResponder {
